@@ -1,0 +1,438 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Home - sparkle{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="sparkle-title fw-bold mb-4">Welcome to Sparkle ✨</h1>
+                <p class="lead mb-4">Discover the latest fashion trends at unbeatable prices! Shop from our wide collection of clothing, accessories, and more.</p>
+                <a href="{% url 'shop' %}" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+                </a>
+                <a href="#featured-products" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-fire me-2"></i>Trending Now
+                </a>
+            </div>
+            <div class="col-lg-6">
+                <div class="advertisement-section bg-white rounded-3 shadow p-3">
+                    <h5 class="text-center mb-2 text-primary">🔥 Trending</h5>
+                    <div class="ad-content">
+                        <div class="trending-carousel" style="min-height: 160px;">
+                            {% for product in products|slice:":6" %}
+                            <div class="trending-item" style="display: {% if forloop.first %} block{% else %}none{% endif %};">
+                                <div class="text-center">
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded mb-1" style="height: 80px; width: 80px; object-fit: cover;">
+                                    <small class="text-dark d-block fw-bold">{{ product.name|truncatechars:15 }}</small>
+                                    <span class="text-primary fw-bold" style="font-size: 0.9rem;">₹{{ product.final_price|floatformat:0 }}</span>
+                                    {% if product.discount_percentage > 0 %}
+                                    <small class="text-danger d-block" style="font-size: 0.8rem;">{{ product.discount_percentage }}% OFF</small>
+                                    {% endif %}
+                                    <a href="{% url 'product_detail' product.slug %}" class="btn btn-sm btn-outline-primary mt-1" style="font-size: 0.75rem;">View</a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="carousel-indicators text-center mt-1">
+                            {% for product in products|slice:":6" %}
+                            <span class="indicator {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" style="width: 6px; height: 6px;"></span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="features-section bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-shipping-fast fa-3x text-primary"></i>
+                </div>
+                <h4>Free Shipping</h4>
+                <p class="text-muted">On orders above ₹499</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-undo fa-3x text-primary"></i>
+                </div>
+                <h4>Easy Returns</h4>
+                <p class="text-muted">7 days return policy</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-headset fa-3x text-primary"></i>
+                </div>
+                <h4>24/7 Support</h4>
+                <p class="text-muted">Always here to help</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Products Section -->
+<section id="featured-products" class="featured-products py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Trending Now</h2>
+        <div class="row">
+            {% for product in products %}
+            <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+                <div class="card product-card shadow-sm h-100">
+                    <!-- Product Image -->
+                    <div class="product-image-container">
+                        <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.name }}">
+                        {% if product.discount_percentage > 0 %}
+                        <div class="discount-badge">{{ product.discount_percentage }}% OFF</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Product Details -->
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title product-name">{{ product.name|truncatechars:25 }}</h6>
+                        
+                        <div class="price-section mb-2">
+                            {% if product.discount_price %}
+                                <span class="text-muted"><del>₹{{ product.price|floatformat:0 }}</del></span>
+                                <span class="text-danger fw-bold">₹{{ product.discount_price|floatformat:0 }}</span>
+                            {% else %}
+                                <span class="text-primary fw-bold">₹{{ product.price|floatformat:0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <a href="{% url 'product_detail' product.slug %}" class="btn btn-primary btn-sm w-100 mb-2">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                            <form method="post" action="{% url 'add_to_cart' product.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                                    <i class="fas fa-cart-plus me-1"></i>Add to Cart
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'shop' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-arrow-right me-2"></i>Explore All Products
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.sparkle-title {
+    font-size: 4.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 768px) {
+    .sparkle-title {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .sparkle-title {
+        font-size: 2.5rem;
+    }
+}
+
+.hero-image {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+}
+
+.features-section .feature-icon {
+    transition: transform 0.3s ease;
+}
+
+.features-section .feature-icon:hover {
+    transform: scale(1.1);
+}
+
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 10px;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.product-image-container {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+    border-radius: 10px 10px 0 0;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.price-section {
+    margin-bottom: 0.5rem;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #dc3545;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .hero-section .display-4 {
+        font-size: 2rem;
+    }
+    
+    .product-image-container {
+        height: 180px;
+    }
+}
+</style>
+
+<style>
+/* Enhanced Advertisement Styles */
+.advertisement-section {
+    background: white;
+    border: 3px solid #fff;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.ad-carousel-container {
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #f8f9fa;
+}
+
+.ad-carousel-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ad-slide {
+    min-width: 100%;
+    position: relative;
+}
+
+.ad-image-wrapper {
+    position: relative;
+    height: 100%;
+}
+
+.ad-image {
+    transition: transform 0.3s ease;
+}
+
+.ad-slide:hover .ad-image {
+    transform: scale(1.05);
+}
+
+.ad-overlay {
+    backdrop-filter: blur(2px);
+}
+
+.ad-dot {
+    transition: all 0.3s ease;
+}
+
+.ad-dot.active {
+    background: #007bff;
+    transform: scale(1.2);
+}
+
+.ad-dot:hover {
+    background: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .ad-carousel-container {
+        height: 350px !important;
+    }
+    
+    .ad-title {
+        font-size: 1.2rem !important;
+    }
+    
+    .ad-price {
+        font-size: 1.5rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .ad-carousel-container {
+        height: 280px !important;
+    }
+    
+    .ad-overlay {
+        padding: 15px !important;
+    }
+}
+
+.trending-carousel {
+    position: relative;
+    min-height: 200px;
+}
+
+.trending-item {
+    transition: all 0.3s ease;
+}
+
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ddd;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.indicator.active {
+    background-color: #007bff;
+}
+
+.indicator:hover {
+    background-color: #0056b3;
+}
+</style>
+
+<script>
+// Advanced Advertisement Carousel with Right-to-Left Animation
+document.addEventListener('DOMContentLoaded', function() {
+    const track = document.querySelector('.ad-carousel-track');
+    const slides = document.querySelectorAll('.ad-slide');
+    const dots = document.querySelectorAll('.ad-dot');
+    let currentIndex = 0;
+    const totalSlides = slides.length;
+    
+    function updateCarousel() {
+        const translateX = -currentIndex * 100;
+        track.style.transform = `translateX(${translateX}%)`;
+        
+        // Update active dot
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentIndex);
+        });
+    }
+    
+    function nextSlide() {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        updateCarousel();
+    }
+    
+    function prevSlide() {
+        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        updateCarousel();
+    }
+    
+    function goToSlide(index) {
+        currentIndex = index;
+        updateCarousel();
+    }
+    
+    // Auto-slide every 4 seconds
+    let autoSlide = setInterval(nextSlide, 4000);
+    
+    // Pause on hover
+    const container = document.querySelector('.ad-carousel-container');
+    if (container) {
+        container.addEventListener('mouseenter', () => clearInterval(autoSlide));
+        container.addEventListener('mouseleave', () => {
+            autoSlide = setInterval(nextSlide, 4000);
+        });
+    }
+    
+    // Click on dots
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => goToSlide(index));
+    });
+    
+    // Initialize
+    updateCarousel();
+});
+
+// Auto-rotate trending products in advertisement (old functionality)
+    document.addEventListener('DOMContentLoaded', function() {
+    const trendingItems = document.querySelectorAll('.trending-item');
+    const indicators = document.querySelectorAll('.indicator');
+    let currentIndex = 0;
+    
+    function showItem(index) {
+        trendingItems.forEach(item => item.style.display = 'none');
+        indicators.forEach(indicator => indicator.classList.remove('active'));
+        
+        trendingItems[index].style.display = 'block';
+        indicators[index].classList.add('active');
+    }
+    
+    function nextItem() {
+        currentIndex = (currentIndex + 1) % trendingItems.length;
+        showItem(currentIndex);
+    }
+    
+    // Change product every 3 seconds
+    setInterval(nextItem, 3000);
+    
+    // Add click functionality to indicators
+    indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => {
+            currentIndex = index;
+            showItem(index);
+        });
+    });
+});
+</script>
+{% endblock %}

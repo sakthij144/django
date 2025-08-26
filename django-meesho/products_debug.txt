@@ -1,0 +1,6 @@
+Total products found: 0
+
+Products in database:
+--------------------------------------------------
+
+No backup files found in current directory

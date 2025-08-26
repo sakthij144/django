@@ -1,0 +1,203 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Shop - Meesho Clone{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Shop</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Categories</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <a href="{% url 'shop' %}" class="text-decoration-none text-dark">
+                                <i class="fas fa-th-large me-2"></i>All Products
+                            </a>
+                        </li>
+                        {% for category in categories %}
+                        <li class="mb-2">
+                            <a href="?category={{ category.slug }}" class="text-decoration-none text-dark">
+                                <i class="fas fa-tag me-2"></i>{{ category.name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="row">
+                {% for product in products %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card product-card shadow-sm h-100">
+                        <div class="product-image-container">
+                            <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.name }}">
+                            {% if product.discount_percentage > 0 %}
+                            <div class="discount-badge">{{ product.discount_percentage }}% OFF</div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title product-name">{{ product.name }}</h5>
+                            {% if product.size and product.category.name|lower in 'shoes,shirt,kurtis,bangles' %}
+                            <p class="card-text mb-1">
+                                <small class="text-muted">Size: {{ product.get_size_display }}</small>
+                            </p>
+                            {% endif %}
+                            <p class="card-text product-description">
+                                {{ product.description|truncatechars:120 }}
+                            </p>
+                            <div class="price-section mt-auto">
+                                {% if product.discount_price %}
+                                    <div class="original-price">
+                                        <span class="text-muted"><del>₹{{ product.price|floatformat:0 }}</del></span>
+                                    </div>
+                                    <div class="current-price">
+                                        <span class="text-danger fw-bold">₹{{ product.discount_price|floatformat:0 }}</span>
+                                    </div>
+                                {% else %}
+                                    <div class="current-price">
+                                        <span class="text-primary fw-bold">₹{{ product.price|floatformat:0 }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="product-actions mt-3">
+                                <a href="{% url 'product_detail' product.slug %}" class="btn btn-primary btn-sm w-100 mb-2">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </a>
+                                <form method="post" action="{% url 'add_to_cart' product.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                                        <i class="fas fa-cart-plus me-1"></i>Add to Cart
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h3 class="text-muted">No products found</h3>
+                        <p class="text-muted">Try adjusting your search or browse all categories</p>
+                        <a href="{% url 'shop' %}" class="btn btn-primary">Browse All Products</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% if products.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in products.paginator.page_range %}
+                    <li class="page-item {% if products.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if products.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.product-image-container {
+    position: relative;
+    overflow: hidden;
+    height: 250px;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.product-description {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+}
+
+.price-section {
+    margin-bottom: 1rem;
+}
+
+.original-price {
+    font-size: 0.9rem;
+}
+
+.current-price {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.product-actions .btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .product-image-container {
+        height: 200px;
+    }
+    
+    .product-name {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}

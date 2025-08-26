@@ -1,0 +1,148 @@
+{% extends 'core/base.html' %}
+
+{% block title %}My Orders - Sparkle{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">My Orders</h1>
+    
+    {% if orders %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Name</th> <!-- Added  Name column -->
+                    <th>Product Name</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.order_id }}</td>
+                    <td>
+                        <!-- Display  name if available -->
+                        {% if order.name %}
+                            {{ order.name }}
+                        {% else %}
+                            {{ order.user.get_full_name|default:order.user.username }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% for item in order.items.all %}
+                            <div class="mb-1">
+                                <span>
+                                    {{ item.product.name }} x {{ item.quantity }}
+                                    {% if item.size %}
+                                    <br>
+                                    <small class="text-muted">Size: {{ item.get_size_display }}</small>
+                                    {% endif %}
+                                    {% if item.is_cancelled %}
+                                        <span class="badge bg-danger ms-2">Cancelled</span>
+                                    {% elif order.status in 'pending,confirmed' %}
+                                        <br>
+                                        <a href="{% url 'cancel_order_item' item.id %}" class="btn btn-outline-danger btn-sm mt-1">
+                                            Cancel Item
+                                        </a>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">No products</div>
+                        {% endfor %}
+                        
+                        <!-- Review Section for each product -->
+                        {% for item in order.items.all %}
+                            {% if not item.is_cancelled %}
+                            <div class="mt-3 p-3 border rounded">
+                                <h6>Reviews for {{ item.product.name }}</h6>
+                                {% if user.is_authenticated %}
+                                <form method="post" action="{% url 'add_review' item.product.id %}" class="mb-3">
+                                    {% csrf_token %}
+                                    <div class="mb-2">
+                                        <label for="rating" class="form-label">Rating:</label>
+                                        <select class="form-select" name="rating" style="width: 100px;">
+                                            <option value="5">5 Stars</option>
+                                            <option value="4">4 Stars</option>
+                                            <option value="3">3 Stars</option>
+                                            <option value="2">2 Stars</option>
+                                            <option value="1">1 Star</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="comment" class="form-label">Comment:</label>
+                                        <textarea class="form-control" name="comment" rows="2" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-sm">Submit Review</button>
+                                </form>
+                                {% endif %}
+                                
+                                {% for review in item.product.reviews.all %}
+                                <div class="card mb-2">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title mb-1">{{ review.user.username }}</h6>
+                                        <div class="mb-1">
+                                            {% for i in "12345" %}
+                                                <i class="fas fa-star {% if i <= review.rating|stringformat:"s" %}text-warning{% else %}text-muted{% endif %}"></i>
+                                            {% endfor %}
+                                        </div>
+                                        <p class="card-text mb-1">{{ review.comment }}</p>
+                                        <small class="text-muted">{{ review.created_at|date:"F d, Y" }}</small>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <p class="text-muted mb-0">No reviews yet. Be the first to review!</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        <!-- End of Review Section -->
+                    </td>
+                    <td>{{ order.created_at|date:"F d, Y" }}</td>
+                    <td>
+                        {% if order.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif order.status == 'confirmed' %}
+                            <span class="badge bg-primary">Confirmed</span>
+                        {% elif order.status == 'shipped' %}
+                            <span class="badge bg-info text-dark">Shipped</span>
+                        {% elif order.status == 'delivered' %}
+                            <span class="badge bg-success">Delivered</span>
+                        {% elif order.status == 'cancelled' %}
+                            <span class="badge bg-danger">Cancelled</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ order.status|title }}</span>
+                        {% endif %}
+                    </td>
+                    <td>₹{{ order.total_amount }}</td>
+                    <td>
+                        <a href="{% url 'order_confirmation' order.order_id %}" class="btn btn-primary btn-sm mb-1">View Details</a>
+                        {% if order.status in 'pending,confirmed' %}
+                            <form method="POST" action="{% url 'cancel_order' order.order_id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm" 
+                                        onclick="return confirm('Are you sure you want to cancel the entire order?')">
+                                    Cancel Order
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center">
+        <i class="fas fa-box fa-5x text-muted mb-3"></i>
+        <h3>No orders yet</h3>
+        <p>Start shopping to place your first order!</p>
+        <a href="{% url 'shop' %}" class="btn btn-primary">Start Shopping</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

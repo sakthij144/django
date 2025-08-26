@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Cancel Order - Sparkle{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Cancel Order</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5>Are you sure you want to cancel the order: <strong>{{ order.order_id }}</strong>?</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="reason">Cancellation Reason (optional):</label>
+                    <textarea class="form-control" id="reason" name="reason" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-danger">Cancel Entire Order</button>
+                <a href="{% url 'my_orders' %}" class="btn btn-secondary">Back to My Orders</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

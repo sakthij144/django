@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Cancel Order Item - Sparkle{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Cancel Order Item</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5>Are you sure you want to cancel the following item?</h5>
+            
+            <div class="alert alert-warning">
+                <strong>Product:</strong> {{ order_item.product.name }}<br>
+                <strong>Quantity:</strong> {{ order_item.quantity }}<br>
+                {% if order_item.size %}
+                <strong>Size:</strong> {{ order_item.get_size_display }}<br>
+                {% endif %}
+                <strong>Order ID:</strong> {{ order_item.order.order_id }}<br>
+                <strong>Total Price:</strong> ₹{{ order_item.total_price|floatformat:2 }}
+            </div>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="reason">Cancellation Reason (optional):</label>
+                    <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Please provide a reason for cancellation..."></textarea>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Cancel Item</button>
+                    <a href="{% url 'my_orders' %}" class="btn btn-secondary">Back to My Orders</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Profile - Sparkle{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">My Profile</h1>
+    
+    <div class="row">
+        <!-- Left Side: Profile Image and Profile Information -->
+        <div class="col-md-6">
+            <!-- Profile Image Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Profile Picture</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if user.userprofile.profile_image %}
+                        <img src="{{ user.userprofile.profile_image.url }}" alt="Profile Image" class="profile-image-circle mb-3">
+                    {% else %}
+                        <img src="https://via.placeholder.com/200x200.png?text=No+Image" alt="No Profile Image" class="profile-image-circle mb-3">
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Profile Information Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Side: Account Information -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p><strong>First Name:</strong> {{ user.first_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p><strong>Last Name:</strong> {{ user.last_name }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+# Unused files and directories to ignore
+venv/
+media/
+db.sqlite3
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.coverage
+.pytest_cache/
+.tox/
+.nox/
+htmlcov/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.log
+local_settings.py
+staticfiles/
+
+# Unwanted template files
+templates/core/shop_16_categories.html
+templates/core/shop_categories_16.html
+templates/core/shop_easy_edit.html
+templates/core/updated_advertisement.html
+what are the unwanted content in view.py

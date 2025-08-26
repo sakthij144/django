@@ -1,0 +1,286 @@
+
+{% extends 'core/base.html' %}
+
+{% block title %}{{ product.name }} - Sparkle{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Main Product Section (At the top) -->
+        <div class="col-md-6">
+            <img src="{{ product.image.url }}" class="img-fluid rounded main-product-image" alt="{{ product.name }}" style="max-height: 400px; object-fit: cover;">
+        </div>
+        <div class="col-md-6">
+            <h1 class="product-name">{{ product.name }}</h1>
+            <p class="text-muted product-category">Category: {{ product.category.name }}</p>
+            
+            <div class="mb-3 product-price-container">
+                {% if product.discount_price %}
+                    <span class="text-muted"><del>₹{{ product.price }}</del></span>
+                    <span class="text-danger fw-bold fs-3 product-price">₹{{ product.discount_price }}</span>
+                    <span class="badge bg-danger product-discount-percentage">{{ product.discount_percentage }}% OFF</span>
+                {% else %}
+                    <span class="text-primary fw-bold fs-3 product-price">₹{{ product.price }}</span>
+                {% endif %}
+            </div>
+            
+            <p>{{ product.description}}</p>
+            
+            <div class="mb-3">
+                <strong>Stock:</strong> 
+                {% if product.stock > 0 %}
+                    <span class="text-success">{{ product.stock }} available</span>
+                {% else %}
+                    <span class="text-danger">Out of stock</span>
+                {% endif %}
+            </div>
+        
+        {% if product.stock > 0 %}
+            <!-- Show size options only for specific categories -->
+            {% with category_name=product.category.name|lower %}
+            {% if "women" in category_name or "men" in category_name or "kids" in category_name or "footwear" in category_name or "shoe" in category_name %}
+            <div class="mb-3">
+                <label for="size" class="form-label">Size:</label>
+                <select class="form-select" id="size" name="size" style="width: 150px;" required>
+                    <option value="">Select Size</option>
+                    <p>Category: {{ product.category.name }}</p>
+                    <p>Stock: {{ product.stock }}</p>
+                    <p>Category: {{ product.category.name }}</p>
+                    <p>Available Sizes: {% for value, display in product.FOOTWEAR_SIZE_CHOICES %}{{ display }} {% endfor %}</p>
+                    <!-- <p>Size Choices: {{ product.FOOTWEAR_SIZE_CHOICES }}</p>
+                    <p>Size Choices: {{ product.FOOTWEAR_SIZE_CHOICES }}</p> -->
+                    <option value="">Select Size</option>
+                    {% if product.category.name|lower == "footwear" %}
+                    {% for value, display in product.FOOTWEAR_SIZE_CHOICES %}
+                        <option value="{{ value }}">{{ display }}</option>
+                    {% endfor %}
+                    {% else %}
+                    {% for value, display in SIZE_CHOICES %}
+                        <option value="{{ value }}">{{ display }}</option>
+                    {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+            {% endif %}
+            {% endwith %}
+            
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Quantity:</label>
+                <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 100px;">
+            </div>
+            <div class="d-flex gap-2">
+                <form method="post" action="{% url 'add_to_cart' product.id %}" class="d-inline" id="add-to-cart-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" id="cart-quantity" value="1">
+                    <input type="hidden" name="size" id="cart-size" value="">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-cart-plus"></i> Add to Cart
+                    </button>
+                </form>
+                <form method="post" action="{% url 'place_order_direct' product.id %}" class="d-inline" id="place-order-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" id="order-quantity" value="1">
+                    <input type="hidden" name="size" id="order-size" value="">
+                    <button type="submit" class="btn btn-warning btn-lg">
+                        <i class="fas fa-shopping-bag"></i> Place Order
+                    </button>
+                </form>
+                {% if user.is_authenticated %}
+                <form method="post" action="{% url 'add_to_wishlist' product.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-lg">
+                        <i class="fas fa-heart"></i> Add to Wishlist
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            <script>
+                const quantityInput = document.getElementById('quantity');
+                if (quantityInput) {
+                    quantityInput.addEventListener('input', function() {
+                        document.getElementById('cart-quantity').value = this.value;
+                        document.getElementById('order-quantity').value = this.value;
+                    });
+                }
+                
+                const sizeSelect = document.getElementById('size');
+                if (sizeSelect) {
+                    sizeSelect.addEventListener('change', function() {
+                        document.getElementById('cart-size').value = this.value;
+                        document.getElementById('order-size').value = this.value;
+                    });
+                    
+                    // Add form validation
+                    document.getElementById('add-to-cart-form').addEventListener('submit', function(e) {
+                        if (sizeSelect.value === '') {
+                            e.preventDefault();
+                            alert('Please select a size before adding to cart.');
+                            sizeSelect.focus();
+                        }
+                    });
+                    
+                    document.getElementById('place-order-form').addEventListener('submit', function(e) {
+                        if (sizeSelect.value === '') {
+                            e.preventDefault();
+                            alert('Please select a size before placing order.');
+                            sizeSelect.focus();
+                        }
+                    });
+                }
+            </script>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Additional Images Section (Below main product) -->
+    <div class="row">
+        <div class="col-12">
+            <h5>Additional Images</h5>
+            <div class="row">
+                {% for image in additional_images %}
+                <div class="col-1">
+                    <img src="{{ image.image.url }}" class="img-fluid rounded" alt="{{ image.title|default:product.name }}" style="max-height: 80px; cursor: pointer;" onclick="setMainImage('{{ image.image.url }}', '{{ image.product.id }}', '{{ image.name|escapejs }}', '{% if image.discount_price %}₹{{ image.discount_price }}{% else %}₹{{ image.price }}{% endif %}')">
+                    {% if image.title %}
+                    <small class="d-block text-muted">{{ image.title }}</small>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for Larger Image Display -->
+    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" class="img-fluid" alt="Larger view" style="max-height: 70vh;">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Reviews</h3>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'add_review' product.id %}" class="mb-4">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Rating:</label>
+                    <select class="form-select" name="rating" style="width: 100px;">
+                        <option value="5">5 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="2">2 Stars</option>
+                        <option value="1">1 Star</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="comment" class="form-label">Comment:</label>
+                    <textarea class="form-control" name="comment" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+            </form>
+            {% endif %}
+            
+            {% for review in reviews %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-title">{{ review.user.username }}</h6>
+                    <div class="mb-2">
+                        {% for i in "12345" %}
+                            <i class="fas fa-star {% if i <= review.rating|stringformat:"s" %}text-warning{% else %}text-muted{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    <p class="card-text">{{ review.comment }}</p>
+                    <small class="text-muted">{{ review.created_at|date:"F d, Y" }}</small>
+                </div>
+            </div>
+            {% empty %}
+            <p>No reviews yet. Be the first to review!</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Related Products Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Related Products</h3>
+            <div class="row">
+                {% for related_product in related_products %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card">
+                            <img src="{{ related_product.image.url }}" class="card-img-top" alt="{{ related_product.name }}" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ related_product.name|truncatechars:20 }}</h6>
+                                <p class="card-text">
+                                    <span class="text-muted"><del>₹{{ related_product.price }}</del></span>
+                                    <span class="text-danger fw-bold">₹{{ related_product.final_price }}</span>
+                                </p>
+                                <a href="{% url 'product_detail' related_product.slug %}" class="btn btn-primary btn-sm">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function setMainImage(imageUrl, productId, productName, productPrice, discountPrice) {
+        const mainImage = document.querySelector('.main-product-image');
+        if (!mainImage) {
+            console.error('Main image element not found');
+            return;
+        }
+        mainImage.src = imageUrl; // Set the main image source to the clicked image
+        
+        // Show the larger image in a modal
+        const modalImage = document.getElementById('modalImage');
+        if (!modalImage) {
+            console.error('Modal image element not found');
+            return;
+        }
+        modalImage.src = imageUrl; // Set the modal image source
+        $('#imageModal').modal('show'); // Show the modal
+        
+        // Update the product name and price
+        const productNameElement = document.querySelector('.product-name');
+        const productPriceElement = document.querySelector('.product-price');
+        const productPriceContainer = document.querySelector('.product-price-container');
+        
+        if (productNameElement && productPriceElement && productPriceContainer) {
+            productNameElement.textContent = productName; // Update with the new product name
+            productPriceElement.textContent = productPrice; // Update with the new product price
+            
+            // Update the discount badge if it exists
+            const discountBadge = document.querySelector('.product-discount-percentage');
+            if (discountBadge) {
+                // For simplicity, we'll remove the discount badge when switching products
+                // In a real implementation, you might want to calculate this based on the new product data
+                discountBadge.style.display = 'none';
+            }
+        }
+        
+        // Update the forms to use the new product ID
+        const addToCartForm = document.getElementById('add-to-cart-form');
+        const placeOrderForm = document.getElementById('place-order-form');
+        
+        if (addToCartForm) {
+            addToCartForm.action = addToCartForm.action.replace(/\/add_to_cart\/\d+\//, `/add_to_cart/${productId}/`);
+        }
+        
+        if (placeOrderForm) {
+            placeOrderForm.action = placeOrderForm.action.replace(/\/place_order_direct\/\d+\//, `/place_order_direct/${productId}/`);
+        }
+    }
+</script>
+{% endblock %}

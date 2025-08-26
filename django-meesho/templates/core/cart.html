@@ -1,0 +1,84 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Cart - Sparkle{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Shopping Cart</h1>
+    
+    {% if cart_items %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="me-3 rounded">
+                            <div>
+                                <h6 class="mb-0">{{ item.product.name }}</h6>
+                                <small class="text-muted">{{ item.product.category.name }}</small>
+                                {% if item.size %}
+                                <br>
+                                <small class="text-primary">Size: {{ item.get_size_display }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>₹{{ item.product.final_price }}</td>
+                    <td>
+                        <form method="post" action="{% url 'update_cart' item.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <div class="input-group" style="width: 120px;">
+                                <input type="number" class="form-control" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}">
+                                <button type="submit" class="btn btn-outline-primary btn-sm">Update</button>
+                            </div>
+                        </form>
+                    </td>
+                    <td>₹{{ item.total_price }}</td>
+                    <td>
+                        <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger btn-sm me-1">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                        <a href="{% url 'place_order' item.id %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-shopping-bag"></i> Order
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" class="text-end">Total:</th>
+                    <th>₹{{ total }}</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'checkout' %}" class="btn btn-success btn-lg">
+            <i class="fas fa-credit-card"></i> Proceed to Checkout
+        </a>
+    </div>
+    
+    {% else %}
+    <div class="text-center">
+        <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
+        <h3>Your cart is empty</h3>
+        <p>Add some products to get started!</p>
+        <a href="{% url 'shop' %}" class="btn btn-primary">Continue Shopping</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

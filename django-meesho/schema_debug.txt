@@ -1,0 +1,42 @@
+Table 'core_productimage' exists.
+
+Columns in core_productimage table:
+  id (INTEGER)
+  image (varchar(100))
+  title (varchar(100))
+  description (TEXT)
+  is_similar_product_image (bool)
+  uploaded_at (datetime)
+  is_primary (bool)
+  product_id (bigint)
+  category_id (bigint)
+  discount_price (decimal)
+  name (varchar(200))
+  price (decimal)
+  slug (varchar(50))
+  stock (integer unsigned)
+
+'name' column exists: True
+
+All tables in database:
+  django_migrations
+  sqlite_sequence
+  auth_group_permissions
+  auth_user_groups
+  auth_user_user_permissions
+  django_admin_log
+  django_content_type
+  auth_permission
+  auth_group
+  auth_user
+  django_session
+  core_category
+  core_order
+  core_product
+  core_userprofile
+  core_cart
+  core_review
+  core_userimage
+  core_orderitem
+  core_product_similar_products
+  core_productimage

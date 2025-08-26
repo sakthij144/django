@@ -1,0 +1,60 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Checkout - Sparkle{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Checkout</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Shipping Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-success btn-lg">Place Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                            <span>₹{{ item.total_price }}</span>
+                        </div>
+                        {% if item.size %}
+                        <small class="text-muted">Size: {{ item.get_size_display }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold">
+                        <span>Total:</span>
+                        <span>₹{{ total }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
